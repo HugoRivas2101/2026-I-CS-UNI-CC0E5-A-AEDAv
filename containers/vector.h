@@ -74,6 +74,50 @@ ostream& operator<<(ostream& os, Vector<T>& v){
 // TODO: Implementar como PR
 template <typename T>
 istream& operator>>(istream& is, Vector<T>& v){
+    char bracket;
+
+    // The vector must be start with '[' and end with ']'
+    if (!(is >> bracket) || bracket != '[') {
+        is.setstate(ios::failbit);
+        return is;
+    }
+    
+    // If the vector is empty
+    if ((is >> ws).peek() == ']') {
+        is >> bracket;
+        return is;
+    }
+
+    // Extract elements
+    while (is) {
+        T element;
+
+        if constexpr (is_same_v<T, string>) {
+            // Extract until the comma or the bracket
+            string segment;
+            char last_char;
+
+            while (is.get(last_char) && last_char != ',' && last_char != ']') {
+                segment += last_char;
+            }
+            element = segment;
+            bracket = last_char;
+        }
+        else {
+            // Extraction for numeric types
+            if (!(is >> element)) break;
+            v.push_back(element);
+            is >> bracket;
+        }
+
+        if constexpr (is_same_v<T, string>) v.push_back(element);
+
+        if (bracket == ']') break;
+        if (bracket != ',') {
+            is.setstate(ios::failbit);
+            break;
+        }
+    }
     return is;
 }
 

@@ -31,6 +31,14 @@ void DemoVector(){
     ofstream of("temp.txt");
     of << v1 << endl;
     of << v2 << endl;
-    // of.close();
+    of.close();
     
+    // READ FROM FILE
+    ifstream ifs("tempRead.txt");
+    Vector<string> v4(10);
+    ifs >> v4;
+    cout << "\nread vector: " << v4 << endl;
+    cout << "first element: " << v4.get(0) << endl;
+    cout << "second element: " << v4.get(1) << endl;
+    cout << "size: " << v4.size() << endl;
 }
