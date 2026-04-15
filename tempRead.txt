@@ -1,1 +1,1 @@
-[vector,de,lectura,de,prueba]
+[vector,externo,de,lectura,de,prueba]

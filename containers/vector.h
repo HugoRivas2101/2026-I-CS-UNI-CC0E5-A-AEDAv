@@ -76,7 +76,7 @@ template <typename T>
 istream& operator>>(istream& is, Vector<T>& v){
     char bracket;
 
-    // The vector must be start with '[' and end with ']'
+    // The vector must be start with '['
     if (!(is >> bracket) || bracket != '[') {
         is.setstate(ios::failbit);
         return is;
@@ -88,7 +88,7 @@ istream& operator>>(istream& is, Vector<T>& v){
         return is;
     }
 
-    // Extract elements
+
     while (is) {
         T element;
 
@@ -102,6 +102,7 @@ istream& operator>>(istream& is, Vector<T>& v){
             }
             element = segment;
             bracket = last_char;
+            v.push_back(element);
         }
         else {
             // Extraction for numeric types
@@ -110,14 +111,13 @@ istream& operator>>(istream& is, Vector<T>& v){
             is >> bracket;
         }
 
-        if constexpr (is_same_v<T, string>) v.push_back(element);
-
         if (bracket == ']') break;
         if (bracket != ',') {
             is.setstate(ios::failbit);
             break;
         }
     }
+
     return is;
 }
 
