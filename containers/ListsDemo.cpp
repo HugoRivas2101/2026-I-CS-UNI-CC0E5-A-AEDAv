@@ -1,4 +1,5 @@
 #include "linkedlist.h"
+#include <fstream>
 
 void LinkedListDemo(){
     LinkedList<DescendingLinkedListTrait<T1>> list;
@@ -47,6 +48,19 @@ void LinkedListDemo(){
     // T11: Test del operador << (toString)
     cout << "\n--- Test Operador << ---" << endl;
     cout << "Contenido de listaMovida: " << listaMovida << endl;
+
+    // T14: Test del operador >>
+    cout << "\n--- Test Lectura Operador >> desde Archivo (testOperator.txt) ---" << endl;
+    
+    ifstream file("testOperator.txt");
+    if (file.is_open()) {
+        LinkedList<DescendingLinkedListTrait<T1>> listFromFile;
+        file >> listFromFile;
+        cout << "Contenido leido del archivo: " << listFromFile << endl;
+        file.close();
+    } else {
+        cout << "No se encontro 'testOperator.txt' para la prueba de archivo." << endl;
+    }
 }
 
 void ListsDemo(){

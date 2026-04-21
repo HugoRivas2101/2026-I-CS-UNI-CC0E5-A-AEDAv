@@ -282,6 +282,37 @@ ostream& operator<<(ostream& os, LinkedList<Trait>& list){
     return os<<list.toString();
 }
 
+template<typename Trait>
+istream& operator>>(istream& is, LinkedList<Trait>& list){
+    char c;
+    is>>c;
+    if(c!='['){
+        is.setstate(ios::failbit);
+        return is;
+    }
+
+    while (is >> std::ws && is.peek() != ']') {
+        typename Trait::value_type value;
+        if (is >> value) {
+            list.push_back(value, 0); // Asumimos un ref por defecto de 0
+            
+            is >> std::ws;
+            if (is.peek() == ',') {
+                is.ignore();
+            }
+        } else {
+            break;
+        }
+    }
+    is >> c; 
+    if (c != ']') {
+        is.setstate(std::ios::failbit);
+    }
+    return is;
+    
+}
+
+
 void ListsDemo();
 
 #endif // __LINKEDLIST_H__
