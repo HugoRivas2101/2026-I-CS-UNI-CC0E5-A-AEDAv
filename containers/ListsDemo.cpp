@@ -43,6 +43,10 @@ void LinkedListDemo(){
     LinkedList<DescendingLinkedListTrait<T1>> listaMovida(std::move(list)); 
     cout << "Size lista movida: " << listaMovida.size() << " (Esperado: " << old_size << ")" << endl;
     cout << "Size original tras move: " << list.size() << " (Esperado: 0)" << endl;
+
+    // T11: Test del operador << (toString)
+    cout << "\n--- Test Operador << ---" << endl;
+    cout << "Contenido de listaMovida: " << listaMovida << endl;
 }
 
 void ListsDemo(){

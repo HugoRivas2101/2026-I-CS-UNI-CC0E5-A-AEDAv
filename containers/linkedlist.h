@@ -156,7 +156,7 @@ LinkedList<Trait>::~LinkedList() {
         delete pNode;
         pNode = pNext;
     }
-    
+
     m_pRoot = nullptr;
     m_tail = nullptr;
     m_size = 0;
@@ -263,7 +263,23 @@ size_t LinkedList<Trait>::size() const{
 template<typename Trait>
 string LinkedList<Trait>::toString() const{
     shared_lock<shared_mutex> lock(m_mtx);
-    return "test";
+    ostringstream oss;
+    oss<<"[";
+    Node *pCurr = m_pRoot;
+    while(pCurr != nullptr){
+        oss<<pCurr->getData();
+        pCurr = pCurr->getNext();
+        if(pCurr != nullptr){
+            oss<<", ";
+        }
+    }
+    oss<<"]";
+    return oss.str();
+}
+
+template<typename Trait>
+ostream& operator<<(ostream& os, LinkedList<Trait>& list){
+    return os<<list.toString();
 }
 
 void ListsDemo();
