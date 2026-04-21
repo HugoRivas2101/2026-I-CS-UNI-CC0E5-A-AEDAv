@@ -88,7 +88,7 @@ public:
     LinkedList& operator=(LinkedList &&other){ // Move assignment operator
     }
     
-    virtual        ~LinkedList() {}
+    virtual        ~LinkedList();
     virtual void    push_front(value_type value, Ref ref);
     virtual void    pop_front();
     virtual void    push_back(value_type value, Ref ref);
@@ -148,7 +148,19 @@ LinkedList<Trait>::LinkedList(LinkedList<Trait> &&other){
     other.m_size = 0;
 }
 
-
+template <typename Trait>
+LinkedList<Trait>::~LinkedList() {
+    Node *pNode = m_pRoot;
+    while(pNode != nullptr){
+        Node *pNext = pNode->getNext();
+        delete pNode;
+        pNode = pNext;
+    }
+    
+    m_pRoot = nullptr;
+    m_tail = nullptr;
+    m_size = 0;
+}
 
 template <typename Trait>
 void LinkedList<Trait>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
