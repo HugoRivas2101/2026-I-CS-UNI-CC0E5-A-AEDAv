@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <shared_mutex> // shared_mutex
+#include <mutex> // unique_lock
 #include "general_iterator.h"
 #include "util.h"
 #include "../types.h"
@@ -14,10 +15,12 @@ using namespace std;
 // Forward iterator
 template <typename Container>
 class LinkedListForwardIterator : public general_iterator<Container, LinkedListForwardIterator<Container>>{
+    public:
     using MySelf = LinkedListForwardIterator<Container>;
     using Parent = general_iterator<Container, MySelf>;
     using Parent::Parent;
-    // TODO: Completar el operator++
+    // DONE: Completar el operator++
+    MySelf operator++() {this->m_pNode=this->m_pNode->getNext(); return *this;}
 };
 
 // Linked List Node
@@ -26,11 +29,14 @@ class LLNode{
     using Node = LLNode<T>;
 private:
     T   m_data;
+    Ref m_ref;
     Node *m_next;
 public:
-    LLNode() : m_data(T()), m_next(nullptr) {}
-    LLNode(T data) : m_data(data), m_next(nullptr) {}
-    LLNode(T data, Node *next) : m_data(data), m_next(next) {}
+
+    LLNode() : m_data(T()), m_next(nullptr), m_ref(Ref()) {}
+    LLNode(T data) : m_data(data), m_next(nullptr), m_ref(Ref()) {}
+    LLNode(T data, Node *next) : m_data(data), m_next(next), m_ref(Ref()) {}
+    LLNode(T data, Ref ref, Node *next) : m_data(data), m_ref(ref), m_next(next) {}
     virtual ~LLNode() {}
 
     T      getData() const { return m_data; }
@@ -109,22 +115,109 @@ public:
 };
 
 template <typename T>
-void LinkedList<T>::internal_insert(Node* &pPr  ev, const value_type &value, Ref ref){
+void LinkedList<T>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
     if(!pPrev || m_comp(value, pPrev->getDataRef())){
         pPrev = new Node(value, ref, pPrev);
         m_size++;
-        if(pPrev == m_pRoot)
+        if(pPrev->getNext() == nullptr)
             m_tail = pPrev;
         return;
     }
     internal_insert(pPrev->getNextRef(), value, ref);
 }
 
-template <typename T>
-void LinkedList<T>::insert(const value_type &value, Ref ref){
+template <typename Trait>
+void LinkedList<Trait>::insert(const value_type &value, Ref ref){
     internal_insert(m_pRoot, value, ref);
 }
 
+template <typename Trait>
+void LinkedList<Trait>::push_front(value_type value, Ref ref){
+    unique_lock<shared_mutex> lock(m_mtx);
+    m_pRoot = new Node(value, ref, m_pRoot);
+    m_size++;
+    if(!m_tail)
+        m_tail = m_pRoot;
+}
 
+template <typename Trait>
+void LinkedList<Trait>::push_back(value_type value, Ref ref){
+    unique_lock<shared_mutex> lock(m_mtx);
+    Node *newNodo = new Node(value, ref, nullptr);
+
+    if(!m_tail){
+        m_pRoot = newNodo;
+    }
+    else{
+        m_tail->setNext(newNodo);
+    }
+    m_tail = newNodo;
+    m_size++;
+}
+
+template <typename Trait>
+void LinkedList<Trait>::pop_front(){
+    unique_lock<shared_mutex> lock(m_mtx);
+    if(!m_pRoot)
+        return;
+    Node *temp = m_pRoot;
+    m_pRoot = m_pRoot->getNext();
+    delete temp;
+    m_size--;
+    //One element in list before pop
+    if(m_pRoot == nullptr)
+        m_tail = nullptr;
+}
+
+template <typename Trait>
+void LinkedList<Trait>::pop_back(){
+    unique_lock<shared_mutex> lock(m_mtx);
+    if(!m_tail)
+        return;
+
+    //If there is only one element in the list
+    if(m_pRoot == m_tail){
+        delete m_pRoot;
+        m_pRoot = m_tail = nullptr;
+        m_size--;
+        return;
+    }
+    else{
+        Node *pCurr = m_pRoot;
+        while(pCurr->getNext() != m_tail){
+            pCurr = pCurr->getNext();
+        }
+        delete m_tail;
+        m_tail = pCurr;
+        m_tail->setNext(nullptr);
+    }
+    m_size--;
+}
+
+template<typename Trait>
+typename LinkedList<Trait>::value_type& LinkedList<Trait>::operator[](size_t index){
+    shared_lock<shared_mutex> lock(m_mtx);
+    if(index >= m_size)
+        throw out_of_range("Index out of range");
+    
+    Node *pCurr = m_pRoot;
+    for(size_t i = 0; i < index; ++i)
+        pCurr = pCurr->getNext();
+    return pCurr->getDataRef();
+}
+
+template<typename Trait>
+size_t LinkedList<Trait>::size() const{
+    shared_lock<shared_mutex> lock(m_mtx);
+    return m_size;
+}
+
+template<typename Trait>
+string LinkedList<Trait>::toString() const{
+    shared_lock<shared_mutex> lock(m_mtx);
+    return "test";
+}
+
+void ListsDemo();
 
 #endif // __LINKEDLIST_H__
