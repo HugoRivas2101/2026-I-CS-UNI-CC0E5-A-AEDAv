@@ -45,6 +45,7 @@ public:
     Node*  getNext() const { return m_next; }
     Node*& getNextRef()    { return m_next; }
     void   setNext(Node *next) { m_next = next; }
+    Ref    getRef() const { return m_ref; }
 };
 
 template <typename T>
@@ -80,8 +81,7 @@ private:
     mutable shared_mutex m_mtx;
 public:
     LinkedList() {}
-    LinkedList(const LinkedList &other){ // Copy constructor
-    }
+    LinkedList(const LinkedList &other); // Copy constructor
     LinkedList(LinkedList &&other){ // Move constructor
     }
     LinkedList& operator=(const LinkedList &other){ // Copy assignment operator
@@ -114,8 +114,30 @@ public:
     }
 };
 
-template <typename T>
-void LinkedList<T>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
+template<typename Trait>
+LinkedList<Trait>::LinkedList(const LinkedList<Trait> &other){
+    shared_lock<shared_mutex> lock(other.m_mtx);
+
+    Node *pNode = other.m_pRoot;
+    Node *pPrev = nullptr;
+    m_size = other.m_size;
+
+    while(pNode){
+        Node *pNewNode = new Node(pNode->getData(), pNode->getRef(), nullptr);
+        if(!m_pRoot){
+            m_pRoot = pNewNode;
+        }
+        else{
+            pPrev->setNext(pNewNode);
+        }
+        pPrev = pNewNode;
+        pNode = pNode->getNext();
+    }
+    m_tail = pPrev;
+}
+
+template <typename Trait>
+void LinkedList<Trait>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
     if(!pPrev || m_comp(value, pPrev->getDataRef())){
         pPrev = new Node(value, ref, pPrev);
         m_size++;

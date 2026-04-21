@@ -30,6 +30,12 @@ void LinkedListDemo(){
     // T9: Indexing
     cout << "T9 (Indexing) - Item 0: " << list[0] << " (Expected 100)" << endl;
     cout << "T9 (Indexing) - Item 4: " << list[4] << " (Expected 5)" << endl;
+
+    // T1: Copy constructor
+    cout << "\n--- Test Copia ---" << endl;
+    LinkedList<DescendingLinkedListTrait<T1>> copia(list); 
+    cout << "Size original: " << list.size() << " | Size copia: " << copia.size() << endl;
+    cout << "Copia Item 0: " << copia[0] << " (Debe ser 100)" << endl;
 }
 
 void ListsDemo(){
