@@ -108,7 +108,8 @@ public:
     // Agregar Foreach
     template <typename Func, typename... Args>
     void ForEach(Func func, Args &&...  args){
-        unique_lock<shared_mutex> lock(m_mtx);
+        shared_lock<shared_mutex> lock(m_mtx);
+        if(m_size == 0) return;
         ::ForEach(begin(), end(), func, std::forward<Args>(args)... );
     }
 };
