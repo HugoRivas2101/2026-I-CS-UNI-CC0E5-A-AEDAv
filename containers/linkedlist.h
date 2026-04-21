@@ -82,8 +82,7 @@ private:
 public:
     LinkedList() {}
     LinkedList(const LinkedList &other); // Copy constructor
-    LinkedList(LinkedList &&other){ // Move constructor
-    }
+    LinkedList(LinkedList &&other); // Move constructor
     LinkedList& operator=(const LinkedList &other){ // Copy assignment operator
     }
     LinkedList& operator=(LinkedList &&other){ // Move assignment operator
@@ -135,6 +134,21 @@ LinkedList<Trait>::LinkedList(const LinkedList<Trait> &other){
     }
     m_tail = pPrev;
 }
+
+template<typename Trait>
+LinkedList<Trait>::LinkedList(LinkedList<Trait> &&other){
+    unique_lock<shared_mutex> lock(other.m_mtx);
+    
+    m_pRoot = other.m_pRoot;
+    m_tail = other.m_tail;
+    m_size = other.m_size;
+
+    other.m_pRoot = nullptr;
+    other.m_tail = nullptr;
+    other.m_size = 0;
+}
+
+
 
 template <typename Trait>
 void LinkedList<Trait>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){

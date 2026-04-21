@@ -36,6 +36,13 @@ void LinkedListDemo(){
     LinkedList<DescendingLinkedListTrait<T1>> copia(list); 
     cout << "Size original: " << list.size() << " | Size copia: " << copia.size() << endl;
     cout << "Copia Item 0: " << copia[0] << " (Debe ser 100)" << endl;
+
+    //T2: Move constructor
+    cout << "\n--- Test Move ---" << endl;
+    size_t old_size = list.size();
+    LinkedList<DescendingLinkedListTrait<T1>> listaMovida(std::move(list)); 
+    cout << "Size lista movida: " << listaMovida.size() << " (Esperado: " << old_size << ")" << endl;
+    cout << "Size original tras move: " << list.size() << " (Esperado: 0)" << endl;
 }
 
 void ListsDemo(){
