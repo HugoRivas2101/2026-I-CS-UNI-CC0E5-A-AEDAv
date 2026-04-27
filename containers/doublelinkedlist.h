@@ -2,8 +2,39 @@
 
 #include "linkedlist.h"
 
-// TODO Los iteradores ahora son forward y backward
+// DONE Los iteradores ahora son forward y backward
 // Crear 2 nuevos i
+
+//DOUBLE LINKED LIST FORWARD ITERATOR
+template<typename T>
+class DoubleLinkedListForwardIterator : public general_iterator<T, DoubleLinkedListForwardIterator<T>>{
+    using MySelf = DoubleLinkedListForwardIterator<T>;
+    using Parent = general_iterator<T, MySelf>;
+    using Parent::Parent;
+    
+    MySelf operator++() {
+        if (this->m_pNode) {
+            this->m_pNode = this->m_pNode->getNext();
+        }
+        return *this;
+    }
+};
+
+//DOUBLE LINKED LIST BACKWARD ITERATOR
+template<typename T>
+class DoubleLinkedListBackwardIterator : public general_iterator<T, DoubleLinkedListBackwardIterator<T>>{
+    using MySelf = DoubleLinkedListBackwardIterator<T>;
+    using Parent = general_iterator<T, MySelf>;
+    using Parent::Parent;
+    
+    MySelf operator++() {
+        if (this->m_pNode) {
+            this->m_pNode = this->m_pNode->getPrev();
+        }
+        return *this;
+    }
+};
+
 template <typename T>
 class DLLNode : public LLNode<T, DLLNode<T>>{
     private:
