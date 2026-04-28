@@ -119,8 +119,45 @@ void CircularDoubleLinkedListDemo() {
     cout << "Pop Back: " << valB << " | Restante: " << cdll << endl;
 }
 
+void CircularLinkedListDemo() {
+    cout << "\n=== PRUEBAS DE CIRCULAR LINKED LIST (SIMPLE) ===" << endl;
+
+    // INSERCION ORDENADA
+    printHeader("CLL: INSERCION ORDENADA");
+    CircularLinkedList<AscendingLinkedListTrait<int>> cll;
+    cll.insert(40, 1); 
+    cll.insert(10, 2); 
+    cll.insert(30, 3);
+    cout << "CLL Ascendente (esperado 10, 30, 40): " << cll << endl;
+
+    // ACCESO POR INDICE
+    printHeader("CLL: ACCESO POR INDICE");
+    cout << "Primero (Indice 0): " << cll[0] << endl;
+    cout << "Ultimo  (Indice 2): " << cll[2] << endl;
+
+    // PUSH/POP EXTREMOS
+    printHeader("CLL: PUSH/POP EXTREMOS");
+    cll.push_front(5, 100);
+    cll.push_back(50, 200);
+    cout << "Lista expandida: " << cll << endl;
+
+    // POP BACK
+    auto [valB, refB] = cll.pop_back();
+    cout << "Pop Back (el valor 50): " << valB << " | Restante: " << cll << endl;
+
+    auto [valF, refF] = cll.pop_front();
+    cout << "Pop Front (el valor 5): " << valF << " | Restante: " << cll << endl;
+
+    // ROTATE
+    printHeader("CLL: MEJORA ROTATE");
+    cout << "Lista original: " << cll << endl;
+    cll.rotate(1); 
+    cout << "Tras rotate(1): " << cll << " (El que era 2do ahora es 1ro)" << endl;
+}
+
 void ListsDemo(){
     DoubleLinkedListDemo();
     CircularDoubleLinkedListDemo();
+    CircularLinkedListDemo();
     cout << "\n=== PRUEBAS FINALIZADAS ===" << endl;
 }
