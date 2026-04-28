@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <cstddef>
 #include <string>
@@ -146,7 +147,7 @@ public:
         this->m_size = 0;
     }
 
-private:
+protected:
     void internal_insert(Node* &curr, Node* prev, const value_type &value, Ref ref) {
         if (!curr || this->m_comp(value, curr->getDataRef())) {
             Node* new_node = new Node(value, ref, curr, prev);

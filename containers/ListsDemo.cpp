@@ -16,6 +16,8 @@ void printHeader(string title) {
     cout << "\n--- TEST: " << title << " ---" << endl;
 }
 
+
+
 void DoubleLinkedListDemo() {
     cout << "=== PRUEBAS DE DOUBLE LINKED LIST ===" << endl;
 
@@ -88,7 +90,37 @@ void DemoList(Container& list, string fileName){
     cout << "Lectura/Escritura en " << fileName << " completada." << endl;
 }
 
+void CircularDoubleLinkedListDemo() {
+    cout << "\n=== PRUEBAS DE CIRCULAR DOUBLE LINKED LIST ===" << endl;
+
+    // Inserción Ordenada (Traits)
+    printHeader("CDLL: INSERCION ORDENADA");
+    CircularDoubleLinkedList<AscendingDLLTrait<int>> cdll;
+    cdll.insert(30, 1); 
+    cdll.insert(10, 2); 
+    cdll.insert(20, 3);
+    cout << "CDLL Ascendente: " << cdll << endl;
+
+    // Comportamiento Circular (Verificación de punteros)
+    printHeader("CDLL: VERIFICACION DE CIRCULARIDAD");
+    cout << "Primero (Indice 0): " << cdll[0] << endl;
+    cout << "Ultimo  (Indice 2): " << cdll[2] << endl;
+
+    // Push/Pop Front & Back
+    printHeader("CDLL: PUSH/POP EXTREMOS");
+    cdll.push_front(5, 0);   // [5, 10, 20, 30]
+    cdll.push_back(40, 4);   // [5, 10, 20, 30, 40]
+    cout << "Lista expandida: " << cdll << endl;
+
+    auto [valF, refF] = cdll.pop_front();
+    cout << "Pop Front: " << valF << " | Restante: " << cdll << endl;
+    
+    auto [valB, refB] = cdll.pop_back();
+    cout << "Pop Back: " << valB << " | Restante: " << cdll << endl;
+}
+
 void ListsDemo(){
     DoubleLinkedListDemo();
+    CircularDoubleLinkedListDemo();
     cout << "\n=== PRUEBAS FINALIZADAS ===" << endl;
 }
