@@ -32,29 +32,36 @@ public:
     }
 };
 
-// Linked List Node
-template <typename T, typename NodeType = void>
-class LLNode{
+// Internal CRTP base — NodeType is the concrete pointer type for m_next
+template <typename T, typename NodeType>
+class LLNodeBase {
 protected:
-    using Node = conditional_t<is_void_v<NodeType>, LLNode<T>, NodeType>;
+    using Node = NodeType;
 private:
-    T   m_data;
-    Ref m_ref;
+    T    m_data;
+    Ref  m_ref;
     Node *m_next;
 public:
-    LLNode() : m_data(T()), m_ref(Ref()), m_next(nullptr) {}
-    LLNode(T data, Ref ref) : m_data(data), m_ref(ref), m_next(nullptr) {}
-    LLNode(T data, Ref ref, Node *next) : m_data(data), m_ref(ref), m_next(next) {}
-    virtual ~LLNode() {}
+    LLNodeBase() : m_data(T()), m_ref(Ref()), m_next(nullptr) {}
+    LLNodeBase(T data, Ref ref) : m_data(data), m_ref(ref), m_next(nullptr) {}
+    LLNodeBase(T data, Ref ref, Node *next) : m_data(data), m_ref(ref), m_next(next) {}
+    virtual ~LLNodeBase() {}
 
-    T      getData() const { return m_data; }
-    T&     getDataRef()    { return m_data; }
-    void   setData(T data) { m_data = data; }
-    Ref    getRef() const  { return m_ref; }
-    void   setRef(Ref ref) { m_ref = ref; }
-    Node* getNext() const { return m_next; }
-    Node*& getNextRef()    { return m_next; }
-    void   setNext(Node *next) { m_next = next; }
+    T      getData() const       { return m_data; }
+    T&     getDataRef()          { return m_data; }
+    void   setData(T data)       { m_data = data; }
+    Ref    getRef() const        { return m_ref; }
+    void   setRef(Ref ref)       { m_ref = ref; }
+    Node*  getNext() const       { return m_next; }
+    Node*& getNextRef()          { return m_next; }
+    void   setNext(Node *next)   { m_next = next; }
+};
+
+// Concrete self-referential node: LLNode<T> points to LLNode<T>
+template <typename T>
+class LLNode : public LLNodeBase<T, LLNode<T>> {
+public:
+    using LLNodeBase<T, LLNode<T>>::LLNodeBase;
 };
 
 // Traits de Ordenamiento
@@ -84,7 +91,8 @@ public:
     using forward_iterator = LinkedListForwardIterator<MySelf>;
     friend forward_iterator;
 
-private:
+// cambiar de privado a protected para que los miembros puedan ser usados por las clases que lo hereden
+protected:
     Node *m_pRoot = nullptr;
     Node *m_tail = nullptr;
     size_t m_size = 0;

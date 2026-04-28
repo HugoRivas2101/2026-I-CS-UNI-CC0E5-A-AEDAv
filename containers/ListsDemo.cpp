@@ -1,111 +1,94 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
+#include <thread>
+#include <vector>
+#include <sstream>
 #include "../types.h"
 #include "linkedlist.h"
-// #include "doublelinkedlist.h"
-// #include "circularlinkedlist.h"
-// #include "circulardoublelinkedlist.h"
+#include "doublelinkedlist.h"
+#include "circularlinkedlist.h"
+#include "circulardoublelinkedlist.h"
 
 using namespace std;
 
+void printHeader(string title) {
+    cout << "\n--- TEST: " << title << " ---" << endl;
+}
+
+void DoubleLinkedListDemo() {
+    cout << "=== PRUEBAS DE DOUBLE LINKED LIST ===" << endl;
+
+    // Inserción Ordenada
+    printHeader("INSERCION ORDENADA");
+    DoubleLinkedList<AscendingDLLTrait<int>> listAsc;
+    listAsc.insert(30, 1); listAsc.insert(10, 2); listAsc.insert(20, 3);
+    cout << "Ascendente (esperado 10, 20, 30): " << listAsc << endl;
+
+    DoubleLinkedList<DescendingDLLTrait<int>> listDesc;
+    listDesc.insert(10, 1); listDesc.insert(30, 2); listDesc.insert(20, 3);
+    cout << "Descendente (esperado 30, 20, 10): " << listDesc << endl;
+
+    // Push/Pop Front & Back
+    printHeader("PUSH/POP EXTREMOS");
+    DoubleLinkedList<AscendingDLLTrait<int>> listPB;
+    listPB.push_back(100, 10); 
+    listPB.push_front(50, 5);
+    cout << "Lista antes de Pop: " << listPB << endl;
+    
+    auto [valF, refF] = listPB.pop_front();
+    cout << "Valor extraido Front: " << valF << " (Ref: " << refF << ")" << endl;
+    auto [valB, refB] = listPB.pop_back();
+    cout << "Valor extraido Back: " << valB << " (Ref: " << refB << ")" << endl;
+    cout << "Lista despues de Pops (debe estar vacia): " << listPB << endl;
+
+    // Acceso por Índice
+    printHeader("ACCESO POR INDICE (Operador [])");
+    DoubleLinkedList<AscendingDLLTrait<int>> listIdx;
+    for(int i=0; i<6; i++) listIdx.push_back(i*10, i); 
+    cout << "Lista completa: " << listIdx << endl;
+    cout << "Indice 1 (Cerca inicio): " << listIdx[1] << endl;
+    cout << "Indice 4 (Cerca final): " << listIdx[4] << endl;
+
+    // Copy & Move
+    printHeader("COPY & MOVE");
+    DoubleLinkedList<AscendingDLLTrait<int>> copyList = listIdx;
+    cout << "Lista Copiada: " << copyList << " | Size: " << copyList.size() << endl;
+
+    DoubleLinkedList<AscendingDLLTrait<int>> moveList = std::move(copyList);
+    cout << "Lista Movida: " << moveList << " | Size: " << moveList.size() << endl;
+    cout << "Lista Original (tras move, size 0): " << copyList.size() << endl;
+
+    // Concurrencia
+    printHeader("CONCURRENCIA");
+    DoubleLinkedList<AscendingDLLTrait<int>> concurrentList;
+    vector<thread> workers;
+    for(int i = 0; i < 4; i++) {
+        workers.emplace_back([&concurrentList]() {
+            for(int j = 0; j < 250; j++) concurrentList.push_back(j, 0);
+        });
+    }
+    for(auto& t : workers) t.join();
+    cout << "Elementos insertados por 4 hilos: " << concurrentList.size() << endl;
+    cout << "Estado Concurrencia: " << (concurrentList.size() == 1000 ? "CORRECTO" : "ERROR") << endl;
+}
+
+// DemoList para persistencia de archivos
 template <typename Container>
 void DemoList(Container& list, string fileName){
     list.insert(28, 15);
     list.insert(17, 25);
     list.insert(8, 35);
-    list.insert(4, 45);
-    list.insert(35, 55);
-    cout << list << endl;
-    // Grabar la lista en un archivo
+    
     ofstream os(fileName);
     os << list << endl;
-    
-    // Leer la lista desde un archivo
+
     ifstream is(fileName);
     is >> list;
-    cout << list << endl;
-}
-
-void LinkedListDemo(){
-    LinkedList<T1, AscendingLinkedListTrait<T1>> list;
-    DemoList(list, "AscLL.txt");
-    LinkedList<T1, DescendingLinkedListTrait<T1>> list2;
-    DemoList(list2, "DescLL.txt");
-}
-
-void DoubleLinkedListDemo(){
-    // DoubleLinkedList<T1, AscendingDLLTrait<T1>> list;
-    // DemoList(list, "AscDLL.txt");
-    // DoubleLinkedList<T1, DescendingDLLTrait<T1>> list2;
-    // DemoList(list2, "DescDLL.txt");
-}
-
-void CircularLinkedListDemo(){
-    
-}
-
-void CircularLinkedListDemo(){
-    
+    cout << "Lectura/Escritura en " << fileName << " completada." << endl;
 }
 
 void ListsDemo(){
-    LinkedListDemo();
-    CircularLinkedListDemo();
     DoubleLinkedListDemo();
-    CircularDoubleLinkedListDemo();
-}
-
-void TestConcurrencia() {
-    cout << "\nTEST DE CONCURRENCIA" << endl;
-    LinkedList<AscendingLinkedListTrait<T1>> list;
-
-    // 5 hilos van a intentar meter 1000 elementos cada uno al mismo tiempo
-    auto worker = [&list](int thread_id) {
-        for(int i = 0; i < 1000; i++) {
-            list.push_front(i, thread_id);
-        }
-    };
-
-    thread t1(worker, 1);
-    thread t2(worker, 2);
-    thread t3(worker, 3);
-    thread t4(worker, 4);
-    thread t5(worker, 5);
-
-    t1.join(); t2.join(); t3.join(); t4.join(); t5.join();
-
-    cout << "Se lanzaron 5 hilos insertando 1000 elementos simultaneamente." << endl;
-    cout << "Tamano de la lista (Esperado 5000): " << list.size() << endl;
-    if(list.size() == 5000) {
-        cout << "ESTADO: EXITO - El shared_mutex previno condiciones de carrera perfectamente." << endl;
-    } else {
-        cout << "ESTADO: FALLO - Hubo corrupcion de memoria." << endl;
-    }
-}
-void TestOperators() {
-    cout << "\nTEST DE OPERADORES" << endl;
-    LinkedList<AscendingLinkedListTrait<T1>> list;
-    
-    // 1. Probamos operator>> (Lectura)
-    cout << "Simulando lectura desde formato: [(10, 100), (20, 200), (30, 300)]" << endl;
-    stringstream simulador_input("[(10, 100), (20, 200), (30, 300)]");
-    simulador_input >> list;
-
-    // 2. Probamos operator<< (Escritura)
-    cout << "Lista luego de la lectura (operator<<): " << list << endl;
-    
-    // 3. Probamos operator[] (Acceso seguro por indice)
-    cout << "Accediendo al indice [0] (operator[]): Dato -> " << list[0] << endl;
-    cout << "Accediendo al indice [2] (operator[]): Dato -> " << list[2] << endl;
-    
-    // Probamos la excepcion del operator[] (Descomentar para probar)
-    // cout << "Probando fuera de rango: " << list[5] << endl; // Lanzara la excepcion
-}
-void ListsDemo(){
-    TestBasicos();
-    TestConcurrencia();
-    TestOperators();
-    cout << "\n=== FIN DE LAS PRUEBAS ===" << endl;
+    cout << "\n=== PRUEBAS FINALIZADAS ===" << endl;
 }
