@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
+#include <thread>
 #include "../types.h"
 #include "linkedlist.h"
 // #include "doublelinkedlist.h"
@@ -29,9 +29,9 @@ void DemoList(Container& list, string fileName){
 }
 
 void LinkedListDemo(){
-    LinkedList<T1, AscendingLinkedListTrait<T1>> list;
+    LinkedList<AscendingLinkedListTrait<T1>> list;
     DemoList(list, "AscLL.txt");
-    LinkedList<T1, DescendingLinkedListTrait<T1>> list2;
+    LinkedList<DescendingLinkedListTrait<T1>> list2;
     DemoList(list2, "DescLL.txt");
 }
 
@@ -46,7 +46,7 @@ void CircularLinkedListDemo(){
     
 }
 
-void CircularLinkedListDemo(){
+void CircularDoubleLinkedListDemo(){
     
 }
 
@@ -103,8 +103,7 @@ void TestOperators() {
     // Probamos la excepcion del operator[] (Descomentar para probar)
     // cout << "Probando fuera de rango: " << list[5] << endl; // Lanzara la excepcion
 }
-void ListsDemo(){
-    TestBasicos();
+void ListsDemo_v2(){
     TestConcurrencia();
     TestOperators();
     cout << "\n=== FIN DE LAS PRUEBAS ===" << endl;
