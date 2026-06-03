@@ -6,6 +6,8 @@
 #include <string>
 #include <sstream>
 #include <shared_mutex> // shared_mutex
+#include <stdexcept>    // out_of_range
+#include <tuple>        // tuple
 #include "general_iterator.h"
 #include "util.h"
 #include <mutex>
@@ -63,15 +65,21 @@ ostream& operator<<(ostream& os, VectorNode<T>& node){
     return os << "(" << node.getData() << ", " << node.getRef() << ")";
 }
 
+// Trait minimo: solo expone value_type. Uniforma Vector con los demas contenedores.
 template <typename T>
+struct VectorTrait{
+    using value_type = T;
+};
+
+template <typename Trait>
 class Vector{
 public:
-    using  value_type = T;
-    using  forward_iterator   = vector_forward_iterator < Vector<T> > ;
+    using  value_type = typename Trait::value_type;
+    using  forward_iterator   = vector_forward_iterator < Vector<Trait> > ;
     friend forward_iterator;
-    using  backward_iterator  = vector_backward_iterator< Vector<T> > ;
+    using  backward_iterator  = vector_backward_iterator< Vector<Trait> > ;
     friend backward_iterator;
-    using  Node               = VectorNode<T>;
+    using  Node               = VectorNode<value_type>;
 private:
     size_t  m_capacity;
     size_t  m_size;
@@ -82,6 +90,8 @@ public:
     Vector(size_t capacity = 10);
     virtual ~Vector();
     virtual void push_back(value_type value, Ref ref);
+    virtual std::tuple<value_type, Ref> pop_back();   // devuelve (dato, ref)
+    virtual Node& operator[](size_t index);           // acceso por indice (Heap)
     virtual size_t size() const;
     virtual string toString() const;
 
@@ -90,7 +100,7 @@ public:
 
     backward_iterator rbegin() { return backward_iterator(this, m_data + m_size - 1); }
     backward_iterator rend()   { return backward_iterator(this, m_data - 1); }
-    
+
     // Done: Agregar control concurrente
     template <typename Func, typename... Args>
     void ForEach(Func func, Args &&...  args){
@@ -108,20 +118,20 @@ public:
     }
 };
 
-template <typename T>
-Vector<T>::Vector(size_t capacity){
+template <typename Trait>
+Vector<Trait>::Vector(size_t capacity){
     m_capacity = capacity;
     m_size = 0;
     m_data = new Node[capacity];
 }
 
-template <typename T>
-Vector<T>::~Vector(){
+template <typename Trait>
+Vector<Trait>::~Vector(){
     delete [] m_data;
 }
 
-template <typename T>
-void Vector<T>::resize(){
+template <typename Trait>
+void Vector<Trait>::resize(){
     m_capacity = (m_capacity < 10) ? m_capacity+10 : m_capacity * 2;
     Node * new_data = new Node[m_capacity];
     for(size_t i = 0; i < m_size; ++i)
@@ -130,22 +140,41 @@ void Vector<T>::resize(){
     m_data = new_data;
 }
 
-template <typename T>
-void Vector<T>::push_back(value_type value, Ref ref){
+template <typename Trait>
+void Vector<Trait>::push_back(value_type value, Ref ref){
     unique_lock<shared_mutex> lock(m_mtx);
     if(m_size == m_capacity) // Overflow
         resize();
     m_data[m_size++] = Node(value, ref);
 }
 
-template <typename T>
-size_t Vector<T>::size() const{
+// Remueve y devuelve el ultimo como (dato, ref).
+template <typename Trait>
+std::tuple<typename Vector<Trait>::value_type, Ref> Vector<Trait>::pop_back(){
+    unique_lock<shared_mutex> lock(m_mtx);
+    if(m_size == 0)
+        throw out_of_range("Vector vacio: pop_back");
+    Node& last = m_data[--m_size];
+    return std::make_tuple(last.getData(), last.getRef());
+}
+
+// Acceso por indice al nodo (data+ref).
+template <typename Trait>
+typename Vector<Trait>::Node& Vector<Trait>::operator[](size_t index){
+    shared_lock<shared_mutex> lock(m_mtx);
+    if(index >= m_size)
+        throw out_of_range("Vector: indice fuera de rango");
+    return m_data[index];
+}
+
+template <typename Trait>
+size_t Vector<Trait>::size() const{
     shared_lock<shared_mutex> lock(m_mtx);
     return m_size;
 }
 
-template <typename T>
-string Vector<T>::toString() const{
+template <typename Trait>
+string Vector<Trait>::toString() const{
     shared_lock<shared_mutex> lock(m_mtx);
     ostringstream oss;
     oss << "[";
@@ -158,14 +187,14 @@ string Vector<T>::toString() const{
     return oss.str();
 }
 
-template <typename T>
-ostream& operator<<(ostream& os, const Vector<T>& v){
+template <typename Trait>
+ostream& operator<<(ostream& os, const Vector<Trait>& v){
     return os << v.toString();
 }
 
 // TODO: Implementar
-template <typename T>
-istream& operator>>(istream& is, Vector<T>& v){
+template <typename Trait>
+istream& operator>>(istream& is, Vector<Trait>& v){
     return is;
 }
 

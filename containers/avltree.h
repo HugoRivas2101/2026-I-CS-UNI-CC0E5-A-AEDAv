@@ -7,8 +7,9 @@ template<typename T>
 struct AVLNode : public BinaryTreeNode<T, AVLNode<T>> {
     int m_height;
 
-    AVLNode(T data, Ref ref, AVLNode* parent = nullptr) 
-        : BinaryTreeNode<T, AVLNode<T>>(data, ref), m_height(1) {}
+    // Propaga 'parent' a la base (necesario para los iteradores inorden)
+    AVLNode(T data, Ref ref, AVLNode* parent = nullptr)
+        : BinaryTreeNode<T, AVLNode<T>>(data, ref, parent), m_height(1) {}
 };
 
 template<typename Trait>
@@ -49,34 +50,43 @@ private:
         }
     }
 
-    // Rotación por referencia: actualiza el puntero en el padre automáticamente
+    // Rota y mantiene m_pParent (n, q y el hijo que cambia de dueno)
     void rotate(Node*& n, bool b) {
-        Node* q = n->m_pChild[!b];
-        n->m_pChild[!b] = q->m_pChild[b];
+        Node* P     = n->m_pParent;
+        Node* q     = n->m_pChild[!b];
+        Node* child = q->m_pChild[b];
+
+        n->m_pChild[!b] = child;
+        if (child) child->m_pParent = n;
+
         q->m_pChild[b] = n;
+        n->m_pParent   = q;
+        q->m_pParent   = P;
+
         update_height(n);
         update_height(q);
         n = q;
     }
 
+    // b==1: rotacion derecha (izquierda pesada). b==0: rotacion izquierda (derecha pesada).
     void balance(Node*& n) {
         int bf = get_node_height(n->m_pChild[0]) - get_node_height(n->m_pChild[1]);
-        
-        // Caso Izquierda Pesada
+
+        // Izquierda pesada
         if (bf > 1) {
-            // Caso Left-Right: Rotación doble
+            // Left-Right: rota el hijo izquierdo primero
             if (get_node_height(n->m_pChild[0]->m_pChild[1]) > get_node_height(n->m_pChild[0]->m_pChild[0])) {
-                rotate(n->m_pChild[0], 1);
-            }
-            rotate(n, 0);
-        } 
-        // Caso Derecha Pesada
-        else if (bf < -1) {
-            // Caso Right-Left: Rotación doble
-            if (get_node_height(n->m_pChild[1]->m_pChild[0]) > get_node_height(n->m_pChild[1]->m_pChild[1])) {
-                rotate(n->m_pChild[1], 0);
+                rotate(n->m_pChild[0], 0);
             }
             rotate(n, 1);
+        }
+        // Derecha pesada
+        else if (bf < -1) {
+            // Right-Left: rota el hijo derecho primero
+            if (get_node_height(n->m_pChild[1]->m_pChild[0]) > get_node_height(n->m_pChild[1]->m_pChild[1])) {
+                rotate(n->m_pChild[1], 1);
+            }
+            rotate(n, 0);
         }
     }
 };
