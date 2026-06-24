@@ -3,34 +3,38 @@
 #include <stdlib.h>
 #include <string>
 #include "BTree.h"
+#include "..\types.h"
+
 
 //const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
-const char * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
-const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
+const KeyType * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
+const KeyType * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const KeyType * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
-const int BTreeSize = 3;
-void main(int argc, char * argv[], char * envp[])
+const T1 BTreeSize = 3;
+void BTreeDemo()
 {
-       int result, i;
-       BTree <char> bt (BTreeSize);
+       T1 i;
+       BTree<AscendingBTreeTrait<KeyType>> bt(BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
-               result = bt.Insert(keys1[i], i*i);
+               bt.Insert(keys1[i], Ref(i*i));
                //bt.Print(cout);
        }
+       cout << "size=" << bt.size() << " height=" << bt.height() << endl;
        bt.Print(cout);
-       /*for (i = 0; keys2[i]; i++)
+
+       for (i = 0; keys2[i]; i++)
        {
                cout << "Searching " << keys2[i] << " ";
                long ObjID = bt.Search(keys2[i]);
                if( ObjID != -1 )
-                       cout << "Achei " << keys2[i] << " ID = " << ObjID << endl;
+                       cout << "Encontrado " << keys2[i] << " ID = " << ObjID << endl;
                else
-                       cout <<"Nao achei!" << keys2[i] << endl;
-       }*/
-       /*cout.flush();
+                       cout <<"No encontrado" << keys2[i] << endl;
+       }
+       cout.flush();
 
        for (i = 0; keys3[i]; i++)
        {
@@ -38,12 +42,11 @@ void main(int argc, char * argv[], char * envp[])
                if( bt.Remove(keys3[i], -1) )
                        cout << keys3[i] << " removido !" << endl;
                else
-                       cout <<"Nao achei!" << keys3[i] << endl;
+                       cout <<"No encontrado" << keys3[i] << endl;
                bt.Print(cout);
        }
        bt.Print(cout);
-       cout.flush();*/
-       return 1;
+       cout.flush();
 }
 
 
