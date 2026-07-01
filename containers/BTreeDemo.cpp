@@ -4,7 +4,7 @@
 #include <string>
 #include "BTree.h"
 #include "..\types.h"
-
+#include <fstream>
 
 //const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
 const KeyType * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
@@ -12,10 +12,16 @@ const KeyType * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs
 const KeyType * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
 const T1 BTreeSize = 3;
-void BTreeDemo()
+
+template <typename Trait>
+void ExecuteBTreeTest(const string& typeLabel)
 {
+
+        cout<<"====== PRUEBA CON TRAIT "<<typeLabel<<" ======"<<endl;
+
        T1 i;
-       BTree<AscendingBTreeTrait<KeyType>> bt(BTreeSize);
+       BTree<Trait> bt(BTreeSize);
+
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
@@ -23,7 +29,7 @@ void BTreeDemo()
                //bt.Print(cout);
        }
        cout << "size=" << bt.size() << " height=" << bt.height() << endl;
-       bt.Print(cout);
+       //bt.Print(cout);
 
        for (i = 0; keys2[i]; i++)
        {
@@ -43,12 +49,66 @@ void BTreeDemo()
                        cout << keys3[i] << " removido !" << endl;
                else
                        cout <<"No encontrado" << keys3[i] << endl;
-               bt.Print(cout);
+               //bt.Print(cout);
+               cout<<bt;
        }
-       bt.Print(cout);
+       //bt.Print(cout);
        cout.flush();
 }
 
+void BTreeOperatorsDemo(){
+        BTree<AscendingBTreeTrait<KeyType>> bt(3);
+        
+        // operator>>: lectura desde archivo
+        ifstream  ss("btree_test.txt");
+        while(ss >> bt) {}
+        ss.close();
+
+        // operator<<
+        cout << "Arbol insertado via operador >>:" << endl;
+        cout << bt << endl;
+
+        // operator<<
+        ofstream salida("btree_salida.txt");
+        salida << bt;
+        salida.close();
+        cout << "Arbol guardado en btree_salida.txt" << endl;
+}
+
+void BTreeUnifiedDemo(){
+    
+        using BT    = BTree<AscendingBTreeTrait<KeyType>>;
+        using Entry = BT::ObjectInfo;
+
+        BT bt(3);
+        const KeyType* keys="ABCDEFGHIJ";
+        for(T1 i=0; keys[i]; i++) bt.Insert(keys[i], Ref(i*10));
+
+        // ForEach: Recorre todos los elementos
+        cout<<"Todos los elementos: "<<endl;
+        bt.ForEach([](Entry& info, ostream* os){
+                *os<<info.key<<"("<<info.ObjID<<")";
+        }, &cout);
+        cout<<endl;
+
+        // ForEach modo FirstThat: retorna Entry* al encontrar
+        KeyType target = 'E';
+        cout<<"Buscando "<<target<<" (FirstThat): "<<endl;
+        auto found = bt.ForEach([](Entry& info, KeyType* t) -> Entry*{
+                return (info.key == *t) ? &info : nullptr;
+        }, &target);
+
+        if(found) cout << "Encontrado: " << found->key << " ID=" << found->ObjID << endl;
+        else cout<<"No encontrado"<<endl;
+}
+
+void BTreeDemo()
+{
+        BTreeOperatorsDemo();
+        BTreeUnifiedDemo();
+        ExecuteBTreeTest<AscendingBTreeTrait<KeyType>>("ASCENDENTE");
+        ExecuteBTreeTest<DescendingBTreeTrait<KeyType>>("DESCENDENTE");
+}
 
 
 

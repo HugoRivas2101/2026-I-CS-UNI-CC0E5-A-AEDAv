@@ -32,6 +32,7 @@ struct tagObjectInfo
        tagObjectInfo()                          {}
        operator keyType                         ()     { return key; }
        long                    GetUseCounter() { return UseCounter;    }
+       value_type& getDataRef(){return key;}
 };
 
 template <typename KeyType, typename RefType, typename Comparator>
@@ -732,6 +733,8 @@ CBTreePage<Trait>::GetFirstObjectInfo()
        return m_Keys[0];
 }
 
+/*
+//ELIMAR PRINT HELPER
 template <typename keyType, typename ObjIDType>
 void Print(tagObjectInfo<keyType, ObjIDType> &info, int level, ostream *pOs)
 {
@@ -746,7 +749,7 @@ void CBTreePage<Trait>::Print(ostream & os)
 {
        ForEach(&::Print<value_type, ObjIDType>, 0, &os);
 }
-
+*/
 template <typename Trait>
 void CBTreePage<Trait>::Create()
 {
